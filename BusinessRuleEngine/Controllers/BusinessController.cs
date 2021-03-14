@@ -22,21 +22,33 @@ namespace BusinessRuleEngine.Controllers
 
 
         [HttpGet("GetExpression")]
-        [ProducesResponseType(typeof(string),StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status502BadGateway)]
         public ActionResult<string> GetExpression()
         {
+            Employee khaled = new Employee()
+            {
+                Salary = 2000,
+                Name = "khaled"
+            };
+            Employee Mohamed = new Employee()
+            {
+                Salary = 3000,
+                Name = "Mohamed"
+            };
             var rules = _context.RuleSetRules.ToList();
             Expression<Func<Employee, bool>> predicate = null;
-            if (rules.Count > 0 )
+            if (rules.Count > 0)
             {
-               
+
                 foreach (var rule in rules)
                 {
                     var expression = new ExpressionBuilder<Employee>().GenerateExpression(rule);
                     predicate = new ExpressionBuilder<Employee>().CombineExpression(expression, predicate, "AND");
                 }
             }
+            var d = predicate.Compile()(khaled);
+            var s = predicate.Compile()(Mohamed);
             return predicate.ToString();
         }
     }

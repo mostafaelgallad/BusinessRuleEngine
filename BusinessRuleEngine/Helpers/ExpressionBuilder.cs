@@ -20,17 +20,31 @@ namespace BusinessRuleEngine.Helpers
                 {
                     var parameter = Expression.Parameter(typeof(T), "X");
                     var leftExpression = Expression.Property(parameter, rule.PropertyName);
+                    var rightExpression = Expression.Property(parameter, rule.PropertyName);
                     var constantExpression = Expression.Constant(Convert.ToDouble(rule.Value), typeof(double));
+                    var constantExpression2 = Expression.Constant(Convert.ToDouble(2000), typeof(double));
                     if (Enum.TryParse<ExpressionType>(rule.Operation, out ExpressionType operation))
                     {
+
                         var expression = Expression.MakeBinary(operation, leftExpression, constantExpression);
-                        return Expression.Lambda<Func<T, bool>>(expression, parameter);
+                        var expression2 = Expression.MakeBinary(ExpressionType.GreaterThan, rightExpression, constantExpression2);
+                        var x = Expression.And(
+                                         expression,
+                                        expression2
+                                       );
+                        return Expression.Lambda<Func<T, bool>>(x, parameter);
                     }
                     return null;
                 }
             }
             return null;
         }
+
+        //public Expression<Func<T, bool>> AndComp(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
+        //{
+
+        //    return first.Compose(second, Expression.AndAlso);
+        //}
 
         public Expression<Func<T, bool>> CombineExpression(Expression<Func<T, bool>> first, Expression<Func<T, bool>> second, string appendoperation)
         {
