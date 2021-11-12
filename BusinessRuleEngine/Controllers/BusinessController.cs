@@ -1,9 +1,15 @@
-﻿using BusinessRuleEngine.Entities;
+﻿using AutoMapper;
+using BusinessRuleEngine.Entities;
 using BusinessRuleEngine.Helpers;
+using FastMember;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -15,9 +21,11 @@ namespace BusinessRuleEngine.Controllers
     public class BusinessController : ControllerBase
     {
         private readonly TestContext _context;
-        public BusinessController(TestContext context)
+        private readonly IMapper _mapper;
+        public BusinessController(TestContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
 
@@ -50,6 +58,14 @@ namespace BusinessRuleEngine.Controllers
             var d = predicate.Compile()(khaled);
             var s = predicate.Compile()(Mohamed);
             return predicate.ToString();
+        }
+
+        [HttpGet("GetListOFContries")]
+        [ProducesResponseType(typeof(ContriesFromTestDB), StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status502BadGateway)]
+        public async Task<ActionResult<List<ContriesFromTestDB>>> GetListOFContries()
+        {
+            return await Test.GetListOFContriesFromSql(_context);
         }
     }
 }

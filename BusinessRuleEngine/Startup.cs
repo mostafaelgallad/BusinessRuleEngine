@@ -21,6 +21,7 @@ namespace BusinessRuleEngine
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddAutoMapper(typeof (Startup));
             services.AddDbContext<TestContext>(options => options.UseSqlServer(Configuration.GetConnectionString("TestDB")));
         }
 
