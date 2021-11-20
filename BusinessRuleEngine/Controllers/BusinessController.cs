@@ -67,5 +67,13 @@ namespace BusinessRuleEngine.Controllers
         {
             return await Test.GetListOFContriesFromSql(_context);
         }
+
+        [HttpGet("GetListOFContries2")]
+        [ProducesResponseType(typeof(ContriesFromTestDB), StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status502BadGateway)]
+        public async Task<ActionResult<List<ContriesFromTestDB>>> GetListOFContries2()
+        {
+            return await Test.GetListOFContriesFromSql2(_context);
+        }
     }
 }
