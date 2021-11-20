@@ -9,6 +9,7 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using ExtensionMethods;
 
 namespace BusinessRuleEngine.Helpers
 {
@@ -50,7 +51,6 @@ namespace BusinessRuleEngine.Helpers
                     if (!rd.IsDBNull(i))
                     {
                         string fieldName = rd.GetName(i);
-
                         if (members.Any(m => string.Equals(m.Name, fieldName, StringComparison.OrdinalIgnoreCase)))
                         {
                             accessor[t, fieldName] = rd.GetValue(i);
@@ -63,11 +63,19 @@ namespace BusinessRuleEngine.Helpers
             return ts;
         }
 
+        public static IEnumerable<T> GetResults<T>(SqlDataReader dr) where T : class, new()
+        {
+            while (dr.Read())
+            {
+                yield return dr.ConvertToObject<T>();
+            }
+        }
+
         public static async Task<List<ContriesFromTestDB>> GetListOFContriesFromSql(DbContext context)
         {
             var timer = new Stopwatch();
             timer.Start();
-      
+
             EnsureConnectionOpen(context);
             using (var command = CreateCommand(context, "GetListOFContries", CommandType.StoredProcedure))
             {
@@ -88,29 +96,13 @@ namespace BusinessRuleEngine.Helpers
         {
             var timer = new Stopwatch();
             timer.Start();
+            ContriesFromTestDB contriesFromTestDB = new ContriesFromTestDB();
+            contriesFromTestDB.TestCreate<ContriesFromTestDB>();
+            var res = await ExcuteCommandStored<ContriesFromTestDB>(context, "GetListOFContries");
+            timer.Stop();
 
-            EnsureConnectionOpen(context);
-            using (var command = CreateCommand(context, "GetListOFContries", CommandType.StoredProcedure))
-            {
-                using (var dataReader = await command.ExecuteReaderAsync())
-                {
-
-                    List<ContriesFromTestDB> result = new List<ContriesFromTestDB>();
-                    while (dataReader.Read())
-                    {
-                        if (dataReader.HasRows)
-                        {
-                            var fff = Test.ConvertToObject<ContriesFromTestDB>((SqlDataReader)dataReader);
-                            result.Add(fff);
-                        }
-                    }
-                    //B: Run stuff you want timed
-                    timer.Stop();
-
-                    TimeSpan timeTaken = timer.Elapsed;
-                    return result;
-                }
-            }
+            TimeSpan timeTaken = timer.Elapsed;
+            return res;
         }
 
         private static void EnsureConnectionOpen(DbContext context)
@@ -120,6 +112,33 @@ namespace BusinessRuleEngine.Helpers
             if (connection.State != ConnectionState.Open)
             {
                 connection.Open();
+            }
+        }
+        public static IEnumerable<T> GetResultsv<T>(SqlDataReader dr) where T : class, new()
+        {
+            while (dr.Read())
+            {
+                yield return dr.ConvertToObject<T>();
+            }
+        }
+        private static async Task<List<T>> ExcuteCommandStored<T>(DbContext context, string storedName) where T : class, new()
+        {
+            EnsureConnectionOpen(context);
+            using (var command = CreateCommand(context, storedName, CommandType.StoredProcedure))
+            {
+                using (var dataReader = await command.ExecuteReaderAsync())
+                {
+                    List<T> ts = new List<T>(); 
+                    while (dataReader.Read())
+                    {
+                        if (dataReader.HasRows)
+                        {
+                            var x = dataReader.ConvertToObjectTest<T>();
+                            ts.Add(x);
+                        }
+                    }
+                    return ts;
+                }
             }
         }
 

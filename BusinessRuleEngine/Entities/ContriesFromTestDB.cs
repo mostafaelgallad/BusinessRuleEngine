@@ -1,4 +1,5 @@
-﻿namespace BusinessRuleEngine.Entities
+﻿using ExtensionMethods;
+namespace BusinessRuleEngine.Entities
 {
     public class ContriesFromTestDB
     {
